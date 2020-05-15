@@ -1,0 +1,42 @@
+.Memo {
+  border: 1px solid #dfdfdf;
+  border-radius: 16px;
+  min-width: 130px;
+  max-width: 240px;
+  min-height: 80px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  background-color: #ffffff;
+  box-shadow: 2px 2px 4px #efefff;
+}
+
+.memo-header {
+  width: 100%;
+  height: 24px;
+  border-radius: 16px 16px 0px 0px;
+}
+
+.delete-btn {
+  position: absolute;
+  left: 16px;
+  top: 8px;
+  border: none;
+  border-radius: 8px 8px 0px 0px;
+  font-size: 12px;
+  cursor: pointer;
+  cursor: hand;
+}
+
+textarea {
+  border: none;
+  padding: 0.5em;
+  resize: none;
+  min-width: 130px;
+  min-height: 80px;
+  font-size: 1em;
+  line-height: 1.2;
+}
+
+.memo-text {
+  margin: 16px;
+}
