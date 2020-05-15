@@ -1,21 +1,27 @@
-import React, { Component } from "react";
+import React from "react";
+import { firebaseDb } from "./firebase/firebase";
 import "./App.css";
 
 const App = () => {
+  let db = firebaseDb.ref("/room_url");
+  React.useEffect(() => {
+    // RealtimeDBの読み込み
+    // db.onでオンラインに保存されているJSONに変更がある度に第２引数の関数を実行してstateを変更
+    db.on("value", (value) => setMemos(value.val()));
+  }, []);
+
   // どのメモをドラッグ中か
   const [dragging, setDragging] = React.useState({ key: "", x: 0, y: 0 });
   // どのメモを編集中か
   const [editing, setEditing] = React.useState({ key: "" });
-  // const [memos, setMemos] = React.useState({
-  //   id1: { t: "テキスト1", x: 0, y: 0 },
-  //   id2: { t: "テキスト２", x: 100, y: 100 },
-  // });
   const [memos, setMemos] = React.useState(null);
 
   const addMemo = () => {
-    setMemos({
-      ...memos,
-      [Math.random().toString(36).slice(-8)]: {
+    // 先にキーを登録
+    const newPostKey = db.push().key;
+    // 初期値でupdate
+    db.update({
+      [newPostKey]: {
         t: "テキストを入力",
         x: Math.floor(Math.random() * (200 - 80) + 80),
         y: Math.floor(Math.random() * (200 - 80) + 80),
@@ -24,7 +30,11 @@ const App = () => {
   };
 
   // メモ更新
-  const updateMemo = (key, memo) => setMemos({ ...memos, [key]: memo });
+  const updateMemo = (key, card) => db.update({ [key]: card });
+
+  // メモ削除
+  const removeMemo = (key) => db.child(key).remove();
+
   if (!memos) return <button onClick={() => addMemo()}>+ memo</button>;
   return (
     <div
@@ -58,6 +68,7 @@ const App = () => {
             })
           }
         >
+          <button onClick={() => removeMemo(key)}>x</button>
           {editing.key === key ? (
             <textarea
               name=""
