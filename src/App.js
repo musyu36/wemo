@@ -6,12 +6,26 @@ const App = () => {
   const [dragging, setDragging] = React.useState({ key: "", x: 0, y: 0 });
   // どのメモを編集中か
   const [editing, setEditing] = React.useState({ key: "" });
-  const [memos, setMemos] = React.useState({
-    id1: { t: "テキスト1", x: 0, y: 0 },
-    id2: { t: "テキスト２", x: 100, y: 100 },
-  });
+  // const [memos, setMemos] = React.useState({
+  //   id1: { t: "テキスト1", x: 0, y: 0 },
+  //   id2: { t: "テキスト２", x: 100, y: 100 },
+  // });
+  const [memos, setMemos] = React.useState(null);
+
+  const addMemo = () => {
+    setMemos({
+      ...memos,
+      [Math.random().toString(36).slice(-8)]: {
+        t: "テキストを入力",
+        x: Math.floor(Math.random() * (200 - 80) + 80),
+        y: Math.floor(Math.random() * (200 - 80) + 80),
+      },
+    });
+  };
+
   // メモ更新
   const updateMemo = (key, memo) => setMemos({ ...memos, [key]: memo });
+  if (!memos) return <button onClick={() => addMemo()}>+ memo</button>;
   return (
     <div
       className="App"
@@ -26,6 +40,7 @@ const App = () => {
       }}
       onDragOver={(e) => e.preventDefault()}
     >
+      <button onClick={() => addMemo()}>+ memo</button>
       {Object.keys(memos).map((key) => (
         <div
           key={key}
