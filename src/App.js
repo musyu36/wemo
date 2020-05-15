@@ -1,31 +1,55 @@
-import React, { Component } from "react";
+import React from "react";
+import { firebaseDb } from "./firebase/firebase";
 import "./App.css";
+import "./Memo.css";
 
 const App = () => {
+  let db = firebaseDb.ref("/room_url");
+  React.useEffect(() => {
+    // RealtimeDBの読み込み
+    // db.onでオンラインに保存されているJSONに変更がある度に第２引数の関数を実行してstateを変更
+    db.on("value", (value) => setMemos(value.val()));
+  }, []);
+
+  const headerColors = ["#d0e9d9", "#efc8cf", "#d2c0d5", "#d9e3e3", "#f6dec9"];
+
   // どのメモをドラッグ中か
   const [dragging, setDragging] = React.useState({ key: "", x: 0, y: 0 });
   // どのメモを編集中か
   const [editing, setEditing] = React.useState({ key: "" });
-  // const [memos, setMemos] = React.useState({
-  //   id1: { t: "テキスト1", x: 0, y: 0 },
-  //   id2: { t: "テキスト２", x: 100, y: 100 },
-  // });
   const [memos, setMemos] = React.useState(null);
 
   const addMemo = () => {
-    setMemos({
-      ...memos,
-      [Math.random().toString(36).slice(-8)]: {
+    // 先にキーを登録
+    const newPostKey = db.push().key;
+    // 初期値でupdate
+    db.update({
+      [newPostKey]: {
         t: "テキストを入力",
         x: Math.floor(Math.random() * (200 - 80) + 80),
         y: Math.floor(Math.random() * (200 - 80) + 80),
+        color: headerColors[Math.floor(Math.random() * headerColors.length)],
       },
     });
   };
 
   // メモ更新
-  const updateMemo = (key, memo) => setMemos({ ...memos, [key]: memo });
-  if (!memos) return <button onClick={() => addMemo()}>+ memo</button>;
+  const updateMemo = (key, memo) => {
+    if (!memo.t) {
+      memo.t = "テキストを入力";
+    }
+    db.update({ [key]: memo });
+  };
+
+  // メモ削除
+  const removeMemo = (key) => db.child(key).remove();
+
+  if (!memos)
+    return (
+      <button className="btn-add" onClick={() => addMemo()}>
+        + memo
+      </button>
+    );
   return (
     <div
       className="App"
@@ -40,9 +64,12 @@ const App = () => {
       }}
       onDragOver={(e) => e.preventDefault()}
     >
-      <button onClick={() => addMemo()}>+ memo</button>
+      <button className="btn-add" onClick={() => addMemo()}>
+        + memo
+      </button>
       {Object.keys(memos).map((key) => (
         <div
+          className="Memo"
           key={key}
           style={{
             position: "absolute",
@@ -58,8 +85,19 @@ const App = () => {
             })
           }
         >
+          <div
+            className="memo-header"
+            style={{
+              backgroundColor: memos[key].color,
+            }}
+          >
+            <button className="delete-btn" onClick={() => removeMemo(key)}>
+              ×
+            </button>
+          </div>
           {editing.key === key ? (
             <textarea
+              className="memo-text"
               name=""
               id=""
               cols="15"
@@ -72,7 +110,9 @@ const App = () => {
               defaultValue={memos[key].t}
             ></textarea>
           ) : (
-            <div onClick={(e) => setEditing({ key })}>{memos[key].t}</div>
+            <div className="memo-text" onClick={(e) => setEditing({ key })}>
+              {memos[key].t}
+            </div>
           )}
         </div>
       ))}
